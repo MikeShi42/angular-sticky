@@ -1,63 +1,52 @@
 angular.module("sticky", []).directive("sticky", function($window) {
-  return {
-    link: function(scope, element, attrs) {
+    return {
+        link: function(scope, element, attrs) {
 
-      var $win = angular.element($window);
+            var $win = angular.element($window);
 
-      if (scope._stickyElements === undefined) {
-        scope._stickyElements = [];
+            if (scope._stickyElements === undefined) {
+                scope._stickyElements = [];
 
-        $win.bind("scroll.sticky", function(e) {
-          var pos = $win.scrollTop();
-          for (var i=0; i<scope._stickyElements.length; i++) {
+                $win.bind("scroll.sticky", function(e) {
+                    var pos = $win.scrollTop();
+                    for (var i=0; i<scope._stickyElements.length; i++) {
 
-            var item = scope._stickyElements[i];
+                        var item = scope._stickyElements[i];
+                        if(pos > item.start - item.offset){
+                            item.element.css({'margin-top':pos-item.start+item.offset+'px'});
+                            console.log(pos-item.start, item.offset);
+                            item.isStuck = true;
+                        }
+                        if (item.isStuck && pos < item.start - item.offset) {
+                            item.element.css({'margin-top':'0px'});
+                            item.isStuck = false;
+                        }
+                    }
+                });
 
-            if (!item.isStuck && pos > item.start) {
-              item.element.addClass("stuck");
-              item.isStuck = true;
-
-              if (item.placeholder) {
-                item.placeholder = angular.element("<div></div>")
-                    .css({height: item.element.outerHeight() + "px"})
-                    .insertBefore(item.element);
-              }
+                var recheckPositions = function() {
+                    for (var i=0; i<scope._stickyElements.length; i++) {
+                        var item = scope._stickyElements[i];
+                        if (!item.isStuck) {
+                            item.start = item.element.offset().top;
+                        } else if (item.placeholder) {
+                            item.start = item.placeholder.offset().top;
+                        }
+                    }
+                };
+                $win.bind("load", recheckPositions);
+                $win.bind("resize", recheckPositions);
             }
-            else if (item.isStuck && pos < item.start) {
-              item.element.removeClass("stuck");
-              item.isStuck = false;
 
-              if (item.placeholder) {
-                item.placeholder.remove();
-                item.placeholder = true;
-              }
-            }
-          }
-        });
+            var item = {
+                element: element,
+                isStuck: false,
+                start: element.offset().top,
+                offset: parseFloat(attrs.sticky) || 0
+            };
 
-        var recheckPositions = function() {
-          for (var i=0; i<scope._stickyElements.length; i++) {
-            var item = scope._stickyElements[i];
-            if (!item.isStuck) {
-              item.start = item.element.offset().top;
-            } else if (item.placeholder) {
-              item.start = item.placeholder.offset().top;
-            }
-          }
-        };
-        $win.bind("load", recheckPositions);
-        $win.bind("resize", recheckPositions);
-      }
+            scope._stickyElements.push(item);
 
-      var item = {
-        element: element,
-        isStuck: false,
-        placeholder: attrs.usePlaceholder !== undefined,
-        start: element.offset().top
-      };
-
-      scope._stickyElements.push(item);
-
-    }
-  };
+        }
+    };
 });
