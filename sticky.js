@@ -14,7 +14,6 @@ angular.module("sticky", []).directive("sticky", function($window) {
                         var item = scope._stickyElements[i];
                         if(pos > item.start - item.offset){
                             item.element.css({'margin-top':pos-item.start+item.offset+'px'});
-                            console.log(pos-item.start, item.offset);
                             item.isStuck = true;
                         }
                         if (item.isStuck && pos < item.start - item.offset) {
