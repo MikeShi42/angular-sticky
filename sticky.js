@@ -29,8 +29,6 @@ angular.module("sticky", []).directive("sticky", function($window) {
                         var item = scope._stickyElements[i];
                         if (!item.isStuck) {
                             item.start = item.element.offset().top;
-                        } else if (item.placeholder) {
-                            item.start = item.placeholder.offset().top;
                         }
                     }
                 };
